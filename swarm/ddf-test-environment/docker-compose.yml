@@ -1,0 +1,11 @@
+version: '3.7'
+
+services:
+  test:
+    image: someTestImage
+    extra_hosts:
+      - "ddf1${DEPLOY_HOSTNAME_SUFFIX}.${DEPLOY_DOMAIN:-test}:${SWARM_LB_IP:-127.0.0.1}"
+      - "ddf2${DEPLOY_HOSTNAME_SUFFIX}.${DEPLOY_DOMAIN:-test}:${SWARM_LB_IP:-127.0.0.1}"
+    environment:
+      SUT1_HOST: ddf1${DEPLOY_HOSTNAME_SUFFIX}.${DEPLOY_DOMAIN:-test}
+      SUT2_HOST: ddf2${DEPLOY_HOSTNAME_SUFFIX}.${DEPLOY_DOMAIN:-test}

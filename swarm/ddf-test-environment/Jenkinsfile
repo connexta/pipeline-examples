@@ -1,0 +1,36 @@
+@Library('github.com/connexta/cx-pipeline-library@master') _
+pipeline {
+  agent { label 'linux-small' }
+  
+  environment {
+    DEPLOY_DOMAIN = "test.phx.connexta.com"
+    DEPLOY_HOSTNAME_SUFFIX = "-${env.BUILD_TAG}"
+  }
+  
+  stages {
+    stage('Deploy Test Environment') {
+      environment {
+        DOCKER_HOST = "tcp://swarm-manager1.phx.connexta.com"
+      }
+      steps {
+        sh 'docker stack deploy -c <(docker-compose -f stack.yml config) ${env.BUILD_TAG}'
+      }
+    }
+    stage('Run Tests') {
+      steps {
+        dockerd {}
+        sh 'docker-compose up --abort-on-container-exit'
+      }
+      post {
+        always {
+          sh 'docker-compose down'
+        }
+      }
+    }
+  }
+  post {
+    always {
+      sh 'docker -H tcp://swarm-manager1.phx.connexta.com:2375 rm ${env.BUILD_TAG}'
+    }
+  }
+}
